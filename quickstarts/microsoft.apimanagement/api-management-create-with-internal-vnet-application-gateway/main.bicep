@@ -219,7 +219,11 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-09-01' = {
         name: 'apim-listener'
         properties: {
           frontendIPConfiguration: {
-            id: resourceId('Microsoft.Network/applicationGateways/frontEndIPConfigurations', gatewayName, 'appGwPublicFrontendIp')
+            id: resourceId(
+              'Microsoft.Network/applicationGateways/frontEndIPConfigurations',
+              gatewayName,
+              'appGwPublicFrontendIp'
+            )
           }
           frontendPort: {
             id: resourceId('Microsoft.Network/applicationGateways/frontEndPorts', gatewayName, 'port_80')
@@ -242,7 +246,11 @@ resource appGateway 'Microsoft.Network/applicationGateways@2023-09-01' = {
             id: resourceId('Microsoft.Network/applicationGateways/backendAddressPools', gatewayName, 'gatewayBackEnd')
           }
           backendHttpSettings: {
-            id: resourceId('Microsoft.Network/applicationGateways/backendHttpSettingsCollection', gatewayName, 'apim-gateway-https-setting')
+            id: resourceId(
+              'Microsoft.Network/applicationGateways/backendHttpSettingsCollection',
+              gatewayName,
+              'apim-gateway-https-setting'
+            )
           }
         }
       }
@@ -363,7 +371,7 @@ resource vNet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
       {
         type: 'subnets'
         name: 'apimSubnet'
-       properties: {
+        properties: {
           addressPrefix: apim_subnet_prefix
           serviceEndpoints: [
             {
@@ -376,7 +384,7 @@ resource vNet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
           privateEndpointNetworkPolicies: 'Enabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
           networkSecurityGroup: {
-            id: apimNsg.id  // Reference to the new NSG
+            id: apimNsg.id // Reference to the new NSG
           }
         }
       }
@@ -424,7 +432,106 @@ resource apimNsg 'Microsoft.Network/networkSecurityGroups@2023-09-01' = {
   name: '${base_name}-apim-nsg'
   location: location
   properties: {
-    securityRules: []  // No rules as requested
+    securityRules: [
+      {
+        name: 'Allow-APIM-Management'
+        properties: {
+          description: 'Allow APIM Management Endpoint'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '3443'
+          sourceAddressPrefix: 'ApiManagement'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 100
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'Allow-Azure-Load-Balancer'
+        properties: {
+          description: 'Allow Azure Load Balancer'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '6390'
+          sourceAddressPrefix: 'AzureLoadBalancer'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 110
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'Allow-Azure-Traffic-Manager'
+        properties: {
+          description: 'Allow Azure Traffic Manager'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: 'AzureTrafficManager'
+          destinationAddressPrefix: 'VirtualNetwork'
+          access: 'Allow'
+          priority: 120
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'Allow-Outbound-Storage'
+        properties: {
+          description: 'Allow APIM to contact storage.'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: 'Storage'
+          access: 'Allow'
+          priority: 130
+          direction: 'Outbound'
+        }
+      }
+      {
+        name: 'Allow-Outbound-Sql'
+        properties: {
+          description: 'Allow outbound SQL connections.'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '1433'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: 'Sql'
+          access: 'Allow'
+          priority: 140
+          direction: 'Outbound'
+        }
+      }
+      {
+        name: 'Allow-Outbound-Akv'
+        properties: {
+          description: 'Allow outbound connections to Azure Key Vault.'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: 443
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: 'AzureKeyVault'
+          access: 'Allow'
+          priority: 150
+          direction: 'Outbound'
+        }
+      }
+      {
+        name: 'Allow-Outbound-Azure-Monitor'
+        properties: {
+          description: 'Allow outbound access to Azure Monitor'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '1886,443'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: 'AzureNetworkMonitor'
+          access: 'Allow'
+          priority: 160
+          direction: 'Outbound'
+        }
+      }
+    ]
   }
 }
 
