@@ -363,7 +363,7 @@ resource vNet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
       {
         type: 'subnets'
         name: 'apimSubnet'
-        properties: {
+       properties: {
           addressPrefix: apim_subnet_prefix
           serviceEndpoints: [
             {
@@ -375,6 +375,9 @@ resource vNet 'Microsoft.Network/virtualNetworks@2023-09-01' = {
           ]
           privateEndpointNetworkPolicies: 'Enabled'
           privateLinkServiceNetworkPolicies: 'Enabled'
+          networkSecurityGroup: {
+            id: apimNsg.id  // Reference to the new NSG
+          }
         }
       }
     ]
@@ -413,6 +416,15 @@ resource vnetLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06
     virtualNetwork: {
       id: vNet.id
     }
+  }
+}
+
+// APIM NSG
+resource apimNsg 'Microsoft.Network/networkSecurityGroups@2023-09-01' = {
+  name: '${base_name}-apim-nsg'
+  location: location
+  properties: {
+    securityRules: []  // No rules as requested
   }
 }
 
