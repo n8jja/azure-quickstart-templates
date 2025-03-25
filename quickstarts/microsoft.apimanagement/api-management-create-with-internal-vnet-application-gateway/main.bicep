@@ -509,7 +509,7 @@ resource apimNsg 'Microsoft.Network/networkSecurityGroups@2023-09-01' = {
           description: 'Allow outbound connections to Azure Key Vault.'
           protocol: 'Tcp'
           sourcePortRange: '*'
-          destinationPortRange: 443
+          destinationPortRange: '443'
           sourceAddressPrefix: 'VirtualNetwork'
           destinationAddressPrefix: 'AzureKeyVault'
           access: 'Allow'
@@ -518,12 +518,26 @@ resource apimNsg 'Microsoft.Network/networkSecurityGroups@2023-09-01' = {
         }
       }
       {
-        name: 'Allow-Outbound-Azure-Monitor'
+        name: 'Allow-Outbound-Azure-Monitor-443'
         properties: {
           description: 'Allow outbound access to Azure Monitor'
           protocol: 'Tcp'
           sourcePortRange: '*'
-          destinationPortRange: '1886,443'
+          destinationPortRange: '443'
+          sourceAddressPrefix: 'VirtualNetwork'
+          destinationAddressPrefix: 'AzureNetworkMonitor'
+          access: 'Allow'
+          priority: 160
+          direction: 'Outbound'
+        }
+      }
+      {
+        name: 'Allow-Outbound-Azure-Monitor-1886'
+        properties: {
+          description: 'Allow outbound access to Azure Monitor'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '1886'
           sourceAddressPrefix: 'VirtualNetwork'
           destinationAddressPrefix: 'AzureNetworkMonitor'
           access: 'Allow'
