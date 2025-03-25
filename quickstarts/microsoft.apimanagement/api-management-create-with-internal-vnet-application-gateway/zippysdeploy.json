@@ -466,7 +466,7 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', format('{0}-apim-nsg', parameters('base_name')))]"
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('apimNsg'))]"
       ]
     },
     {
