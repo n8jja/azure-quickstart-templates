@@ -96,6 +96,7 @@
     "publicIPName": "[format('{0}-pip', parameters('base_name'))]",
     "gatewayName": "[format('{0}-agw', parameters('base_name'))]",
     "vnet_dns_link_name": "[format('{0}-vnet-dns-link', parameters('base_name'))]"
+    "apimNsg": "[format('{0}-apim-nsg', parameters('base_name'))]"
   },
   "resources": [
     {
@@ -460,7 +461,9 @@
             }
           }
         ]
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', variables('apimNsg'))]"
     },
     {
       "type": "Microsoft.Network/privateDnsZones",
